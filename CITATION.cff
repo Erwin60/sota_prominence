@@ -1,0 +1,50 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the software and the accompanying paper."
+title: "AT-SOTA Prominence Pipeline"
+abstract: >-
+  A divide-consistent, seamless QGIS/GRASS/SAGA workflow that computes national
+  topographic prominence directly on a raster digital terrain model and certifies
+  Summits on the Air (SOTA) candidates for Austria at the 150 m prominence
+  threshold. The core contribution is PixelMinimax, a pixel-level descending
+  Union-Find algorithm.
+type: software
+authors:
+  - given-names: Erwin
+    family-names: Grabler
+    email: erwin.grabler@artcom.cc
+    affiliation: "Independent researcher, Vienna, Austria"
+    # If you have an ORCID, uncomment and fill it in — Zenodo will use it:
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+version: "5.2"
+date-released: "2026-07-06"
+license: MIT
+repository-code: "https://github.com/Erwin60/sota_prominence"
+url: "https://github.com/Erwin60/sota_prominence"
+keywords:
+  - topographic prominence
+  - SOTA
+  - Summits on the Air
+  - Austria
+  - PixelMinimax
+  - Union-Find
+  - QGIS
+  - GRASS GIS
+  - SAGA GIS
+  - ALS DEM
+  - divide-consistent
+preferred-citation:
+  type: article
+  title: "A Divide-Consistent, Seamless QGIS Workflow for SOTA Prominence (150 m) in Austria"
+  authors:
+    - given-names: Erwin
+      family-names: Grabler
+      email: erwin.grabler@artcom.cc
+      affiliation: "Independent researcher, Vienna, Austria"
+  year: 2026
+  # Fill these in once the paper is published:
+  # journal: ""
+  # volume: ""
+  # issue: ""
+  # start: ""   # first page
+  # end: ""      # last page
+  # doi: ""
