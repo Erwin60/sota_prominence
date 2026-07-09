@@ -16,7 +16,7 @@
 #    Spatial join (point-in-polygon) takes over 'land_id' and 'land'.
 #    Optional - if the path is omitted, the fields remain NULL.
 #
-# 4. Ausgabe-Felder:
+# 4. Output fields:
 #    NAME, name_dist_m, name_match  (wie bisher)
 #    land_id, land                  (new: from federal-state layer)
 

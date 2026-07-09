@@ -180,7 +180,7 @@ If you use this workflow, please cite both the software and the accompanying
 paper. The paper PDF is included in [`paper/`](paper/), and machine-readable
 citation metadata is in [`CITATION.cff`](CITATION.cff) (GitHub shows a "Cite
 this repository" button from it). An archival DOI is minted on Zenodo when a
-release is published — see [`docs/ZENODO_DOI.md`](docs/ZENODO_DOI.md).
+release is published; the resulting archival DOI is then recorded here and in the paper.
 
 ## Author
 

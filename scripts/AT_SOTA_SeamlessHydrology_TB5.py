@@ -2,24 +2,24 @@
 # Filename: AT_SOTA_SeamlessHydrology_TB5.py
 # Version:  3.0  — Thunderbolt 5 SSD + NumPy-vektorisierter Saddle-Loop
 #
-# ZIEL DIESER VERSION:
+# GOAL OF THIS VERSION:
 #   All large intermediate files (filled_dem, basins_raster, saddle vertices)
-#   landen auf einer konfigurierbaren externen SSD (z. B. TB5).
+#   are placed on a configurable external SSD (e.g. TB5).
 #   The internal SSD stays reserved for QGIS, the OS and the results/ GPKGs.
 #
 # CHANGES vs. v2.1:
 #
 #   NEU S3.0-A  SCRATCH_DIR Parameter
-#     Neuer optionaler Input-Parameter SCRATCH_DIR.
+#     New optional input parameter SCRATCH_DIR.
 #     All large GDAL temp files are written explicitly as named files
-#     in SCRATCH_DIR geschrieben statt als QGIS TEMPORARY_OUTPUT.
+#     written into SCRATCH_DIR instead of as QGIS TEMPORARY_OUTPUT.
 #     env vars GDAL_TMPDIR and GRASS_TMPDIR are set to SCRATCH_DIR,
 #     so that SAGA/GRASS also write their internal temps there.
 #     fallback: WORK_DIR/tmp (old behaviour) if SCRATCH_DIR is empty.
 #
 #   NEW S3.0-B  GRASS r.watershed memory increased
 #     memory: 4096 -> 16384 MB (safe on 64 GB machines).
-#     Reduziert GRASS-interne Swap-I/O auf SSD erheblich.
+#     Substantially reduces GRASS-internal swap I/O on the SSD.
 #
 #   NEW S3.0-C  saddle loop fully vectorised (NumPy)
 #     The previous pure-Python loop over all vertex features (Step 7)
@@ -28,7 +28,7 @@
 #                (a single Python->C transition via getFeatures())
 #       Phase B: vectorised raster lookup on raster_array for all
 #                vertices simultaneously via NumPy integer indexing
-#       Phase C: 8-Nachbar-Lookup ebenfalls vektorisiert per ndimage.shift
+#       Phase C: 8-neighbour lookup also vectorised via ndimage.shift
 #     Result: one Python loop over the ~paired vertices instead of over all.
 #     Speedup: 10-50x depending on the vertex count (typically 50-200 million vertices).
 #
@@ -36,12 +36,12 @@
 #     warning if available space on SCRATCH_DIR < MIN_SCRATCH_GB (40 GB).
 #
 #   UNCHANGED:
-#     Rechenlogik, SAGA-Parameter, GRASS-Parameter, Output-Schema,
+#     computation logic, SAGA parameters, GRASS parameters, output schema,
 #     basin-ID assignment on peaks, Fix-A to Fix-D from v2.1.
 #
-# EMPFOHLENE ENV-VARS / PARAMETER:
+# RECOMMENDED ENV VARS / PARAMETERS:
 #   SCRATCH_DIR -> e.g. /Volumes/TB5_SSD/AT_SOTA_scratch
-#   oder via Shell-Skript: --tmpdir /Volumes/TB5_SSD/AT_SOTA_scratch
+#   or via the shell script: --tmpdir /Volumes/TB5_SSD/AT_SOTA_scratch
 #
 # COMPATIBILITY: QGIS 3.44 / GRASS 8.4 / SAGA NextGen 9.11.3 / macOS
 
@@ -209,7 +209,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
             'elevation': filled_dem,
             'threshold': 5000,
             '-a':        True,
-            'memory':    16384,   # NEU: 16 GB statt 4 GB — deutlich weniger GRASS-Swap
+            'memory':    16384,   # NEW: 16 GB instead of 4 GB - much less GRASS swap
             'basin':     basins_tif,   # explizit auf TB5-SSD
         }, context=context, feedback=feedback)['basin']
 
@@ -238,7 +238,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         }, context=context, feedback=feedback)['OUTPUT']
 
         # ----------------------------------------------------------------
-        # STEP 4 — Peak detection via SAGA NextGen focal maximum
+        # STEP 4 - peak detection via SAGA NextGen focal maximum
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 4/8 — Detecting local maxima (SAGA focal max, 3×3)...")
         dem_focalmax = processing.run("sagang:focalstatistics", {
@@ -350,7 +350,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         }, context=context, feedback=feedback)['OUTPUT']
 
         # ----------------------------------------------------------------
-        # STEP 7 — u_basin / v_basin via VEKTORISIERTEN Raster-Lookup
+        # STEP 7 - u_basin / v_basin via VECTORISED raster lookup
         #
         # NEW S3.0-C: fully NumPy-vectorised instead of a pure-Python loop.
         #
@@ -363,7 +363,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         #            -> rows[], cols[] via NumPy integer division
         #            -> u_vals = raster_array[rows, cols] (vectorised access)
         #
-        #   Phase C  8-Nachbar-Lookup vektorisiert
+        #   Phase C  8-neighbour lookup vectorised
         #            for each offset (dr, dc):
         #              nb_rows = rows + dr  (valid indices)
         #              nb_cols = cols + dc
@@ -428,7 +428,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         rows = ((ys - gt[3]) / gt[5]).astype(np.int64)
         cols = ((xs - gt[0]) / gt[1]).astype(np.int64)
 
-        # Grenzen clippen
+        # clip to bounds
         in_bounds = (
             (rows >= 0) & (rows < n_rows) &
             (cols >= 0) & (cols < n_cols)
@@ -446,7 +446,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
 
         feedback.pushInfo(f"  Valide Zentrum-Vertices: {int(np.sum(u_valid)):,}")
 
-        # --- Phase C: 8-Nachbar-Lookup vektorisiert ---
+        # --- Phase C: 8-neighbour lookup vectorised ---
         feedback.pushInfo("  Phase C: 8-Nachbar-Lookup (vektorisiert)...")
         NEIGHBOURS = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
         v_vals   = np.full(n_total, -1, dtype=np.int32)   # -1 = no partner
@@ -468,9 +468,9 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
             # conditions for this offset:
             # 1. vertex not yet found (!v_found)
             # 2. centre valid (u_valid)
-            # 3. Nachbar in Grenzen
+            # 3. neighbour within bounds
             # 4. neighbour value != centre value (real transition)
-            # 5. Nachbar-Wert != nodata
+            # 5. neighbour value != nodata
             cond = (
                 ~v_found &
                 u_valid &

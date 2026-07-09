@@ -89,5 +89,4 @@ git push -u origin main
   If a fixed version is ever wanted, add it later as a separate dated PDF, not a
   working file.
 * The paper's *Code / Data Availability* section points to this repository and,
-  once minted, to the Zenodo archival DOI (see
-  [`ZENODO_DOI.md`](ZENODO_DOI.md)).
+  once minted, to the Zenodo archival DOI.

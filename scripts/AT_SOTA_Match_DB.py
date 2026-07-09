@@ -576,7 +576,7 @@ class AT_SOTA_Match_DB(QgsProcessingAlgorithm):
         feedback.pushInfo(f'  {at_count} Austria-Einträge, {fgn_count} Nachbarland-Einträge geladen')
 
         # ----------------------------------------------------------------
-        # 2 — SOTA-Punkte in Peak-CRS projizieren + Spatial Index
+        # 2 - project SOTA points into the peak CRS + spatial index
         # ----------------------------------------------------------------
         peaks_crs = peaks.crs()
         xform = QgsCoordinateTransform(

@@ -23,8 +23,7 @@ is in [`../CITATION.cff`](../CITATION.cff); GitHub renders a "Cite this
 repository" button from it.
 
 An archival snapshot of the code (and therefore a citable DOI) is created on
-Zenodo when a release is published — see
-[`../docs/ZENODO_DOI.md`](../docs/ZENODO_DOI.md). Once that DOI exists it is
+Zenodo when a release is published. Once that DOI exists it is
 recorded in `CITATION.cff` and in the paper's *Code / Data Availability*
 section, so paper, code, and archive all point to each other.
 

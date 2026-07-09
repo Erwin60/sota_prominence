@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # Filename: AT_SOTA_PixelMinimax_memmap.py
 # Version:  2.6b — memmap/int64 + lightweight progress
-#           O2: SORT_CHUNK via Bash-Parameter (100M) — einzige wirksame Optimierung
+#           O2: SORT_CHUNK via bash parameter (100M) - the only effective optimisation
 #           O3/O4 entfernt: auf Apple Silicon Unified Memory kontraproduktiv
-#           target_pk: als Post-Processing via find_routing_targets.py
+#           target_pk: as post-processing via find_routing_targets.py
 #
-# ZIEL DIESER VERSION:
+# GOAL OF THIS VERSION:
 #   The computation logic remains UNCHANGED:
 #     - same bilinear resampling
 #     - same 3x3 maxima detection
@@ -19,9 +19,9 @@
 #     - the descending pixel order is produced as an external merge sort
 #     - scratch directory configurable via SOTA_TMPDIR / SOTA_PIXMEM_DIR
 #
-# EMPFOHLENE ENV-VARS (vom Shell-Skript gesetzt):
-#   SOTA_TMPDIR       z.B. /Volumes/Daten/AT_SOTA_150m/tmp/qgis_tmp
-#   SOTA_PIXMEM_DIR   z.B. /Volumes/Daten/AT_SOTA_150m/tmp/pixelminimax_memmap
+# RECOMMENDED ENV VARS (set by the shell script):
+#   SOTA_TMPDIR       e.g. /Volumes/Daten/AT_SOTA_150m/tmp/qgis_tmp
+#   SOTA_PIXMEM_DIR   e.g. /Volumes/Daten/AT_SOTA_150m/tmp/pixelminimax_memmap
 #   SOTA_SORT_CHUNK   number of pixels per sort chunk, default 20_000_000
 #
 # IMPORTANT:
@@ -342,7 +342,7 @@ class AT_SOTA_PixelMinimax(QgsProcessingAlgorithm):
             feedback.pushInfo(f'Gültige Pixel: {valid_count:,}')
 
             # ------------------------------------------------------------
-            # 3 — Lokale Maxima erkennen
+            # 3 - detect local maxima
             # ------------------------------------------------------------
             dem_safe = np.array(dem, copy=True)
             dem_safe[~valid] = -np.inf

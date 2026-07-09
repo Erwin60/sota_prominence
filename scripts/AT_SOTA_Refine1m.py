@@ -339,7 +339,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
         # STEP 5 — Schema angleichen + Merge
         #
         # safe_peaks needs prom_ref and z1m_max so that mergevectorlayers
-        # keine NULL-Spalten erzeugt.
+        # produces no NULL columns.
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 5/5 — Schema angleichen und mergen...")
 
