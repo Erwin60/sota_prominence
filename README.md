@@ -34,6 +34,7 @@ This repository accompanies the paper:
 | `scripts/` | The QGIS Processing scripts and one standalone post-processing script. |
 | `docs/PARAMETERS.md` | Full reference of every command-line and per-step parameter, with examples. |
 | `docs/SETUP.md` | Step-by-step environment setup and a worked first run. |
+| `paper/` | The paper (PDF) documenting the method, data, and validation. |
 
 ### Pipeline scripts
 
@@ -147,6 +148,26 @@ worked examples (local test region, resuming a run, re-running a single step).
 
 ---
 
+## Code status and scope
+
+This code grew out of the practical development of the AT-SOTA project rather
+than as a polished software library. The individual scripts and the overall
+workflow reflect that development history: they were shaped step by step around
+the concrete needs of processing Austria, and they are provided **as is**.
+
+There is clear room for refactoring and optimisation — tighter module
+boundaries, removal of development-time scaffolding, and performance tuning
+would all be possible in a revised version. This was a deliberate trade-off,
+not an oversight: for any given country the full national run is normally a
+**one-time** process, so the effort of hardening the code into a reusable
+package was not justified relative to its benefit. The workflow is documented
+and reproducible, and it does what the paper describes; it is simply not
+optimised as a general-purpose tool.
+
+Anyone adapting it to another country or dataset should expect to read and
+adjust the scripts rather than treat them as a turnkey package, and is welcome
+to improve on the structure.
+
 ## License
 
 Released under the **MIT License** — see [LICENSE](LICENSE). The input geodata
@@ -155,8 +176,11 @@ covered by this license and remain subject to their respective providers' terms.
 
 ## Citation
 
-If you use this workflow, please cite the accompanying paper (see above). A
-`CITATION` entry will be finalised on publication.
+If you use this workflow, please cite both the software and the accompanying
+paper. The paper PDF is included in [`paper/`](paper/), and machine-readable
+citation metadata is in [`CITATION.cff`](CITATION.cff) (GitHub shows a "Cite
+this repository" button from it). An archival DOI is minted on Zenodo when a
+release is published — see [`docs/ZENODO_DOI.md`](docs/ZENODO_DOI.md).
 
 ## Author
 

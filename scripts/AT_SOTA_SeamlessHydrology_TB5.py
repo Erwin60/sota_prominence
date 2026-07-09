@@ -3,47 +3,47 @@
 # Version:  3.0  — Thunderbolt 5 SSD + NumPy-vektorisierter Saddle-Loop
 #
 # ZIEL DIESER VERSION:
-#   Alle großen Intermediate-Dateien (filled_dem, basins_raster, saddle-Vertices)
+#   All large intermediate files (filled_dem, basins_raster, saddle vertices)
 #   landen auf einer konfigurierbaren externen SSD (z. B. TB5).
-#   Das interne SSD bleibt für QGIS, OS und die results/-GPKGs reserviert.
+#   The internal SSD stays reserved for QGIS, the OS and the results/ GPKGs.
 #
-# ÄNDERUNGEN vs. v2.1:
+# CHANGES vs. v2.1:
 #
 #   NEU S3.0-A  SCRATCH_DIR Parameter
 #     Neuer optionaler Input-Parameter SCRATCH_DIR.
-#     Alle großen GDAL-Temp-Dateien werden explizit als named files
+#     All large GDAL temp files are written explicitly as named files
 #     in SCRATCH_DIR geschrieben statt als QGIS TEMPORARY_OUTPUT.
-#     Env-Vars GDAL_TMPDIR und GRASS_TMPDIR werden auf SCRATCH_DIR gesetzt,
-#     damit auch SAGA/GRASS ihre internen Temps dorthin schreiben.
-#     Fallback: WORK_DIR/tmp (altes Verhalten) wenn SCRATCH_DIR leer.
+#     env vars GDAL_TMPDIR and GRASS_TMPDIR are set to SCRATCH_DIR,
+#     so that SAGA/GRASS also write their internal temps there.
+#     fallback: WORK_DIR/tmp (old behaviour) if SCRATCH_DIR is empty.
 #
-#   NEU S3.0-B  GRASS r.watershed memory erhöht
-#     memory: 4096 → 16384 MB (sicher auf 64 GB Maschinen).
+#   NEW S3.0-B  GRASS r.watershed memory increased
+#     memory: 4096 -> 16384 MB (safe on 64 GB machines).
 #     Reduziert GRASS-interne Swap-I/O auf SSD erheblich.
 #
-#   NEU S3.0-C  Saddle-Loop vollständig vektorisiert (NumPy)
-#     Der bisherige Pure-Python-Loop über alle Vertex-Features (Step 7)
-#     wird durch zwei Phasen ersetzt:
-#       Phase A: Alle Koordinaten aus verts_clean in NumPy-Arrays lesen
-#                (ein einziger Python→C-Übergang via getFeatures())
-#       Phase B: Vektorisierter Raster-Lookup auf raster_array für alle
-#                Vertices gleichzeitig via NumPy-Integer-Indexierung
+#   NEW S3.0-C  saddle loop fully vectorised (NumPy)
+#     The previous pure-Python loop over all vertex features (Step 7)
+#     is replaced by two phases:
+#       Phase A: read all coordinates from verts_clean into NumPy arrays
+#                (a single Python->C transition via getFeatures())
+#       Phase B: vectorised raster lookup on raster_array for all
+#                vertices simultaneously via NumPy integer indexing
 #       Phase C: 8-Nachbar-Lookup ebenfalls vektorisiert per ndimage.shift
-#     Ergebnis: ein Python-Loop über die ~paired Vertices statt über alle.
-#     Speedup: 10–50× je nach Vertex-Anzahl (typisch 50–200 Mio. Vertices).
+#     Result: one Python loop over the ~paired vertices instead of over all.
+#     Speedup: 10-50x depending on the vertex count (typically 50-200 million vertices).
 #
-#   NEU S3.0-D  Scratch-Größenprüfung
-#     Warnung wenn verfügbarer Platz auf SCRATCH_DIR < MIN_SCRATCH_GB (40 GB).
+#   NEW S3.0-D  scratch size check
+#     warning if available space on SCRATCH_DIR < MIN_SCRATCH_GB (40 GB).
 #
-#   UNVERÄNDERT:
+#   UNCHANGED:
 #     Rechenlogik, SAGA-Parameter, GRASS-Parameter, Output-Schema,
-#     Basin-ID-Zuweisung auf Peaks, Fix-A bis Fix-D aus v2.1.
+#     basin-ID assignment on peaks, Fix-A to Fix-D from v2.1.
 #
 # EMPFOHLENE ENV-VARS / PARAMETER:
-#   SCRATCH_DIR → z. B. /Volumes/TB5_SSD/AT_SOTA_scratch
+#   SCRATCH_DIR -> e.g. /Volumes/TB5_SSD/AT_SOTA_scratch
 #   oder via Shell-Skript: --tmpdir /Volumes/TB5_SSD/AT_SOTA_scratch
 #
-# KOMPATIBILITÄT: QGIS 3.44 / GRASS 8.4 / SAGA NextGen 9.11.3 / macOS
+# COMPATIBILITY: QGIS 3.44 / GRASS 8.4 / SAGA NextGen 9.11.3 / macOS
 
 from qgis.core import (
     QgsProcessing, QgsProcessingAlgorithm,
@@ -93,7 +93,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
 
     @staticmethod
     def _check_scratch_space(scratch_dir: str, min_gb: float, feedback) -> None:
-        """Warnt wenn < min_gb GB frei auf scratch_dir."""
+        """Warns if < min_gb GB free on scratch_dir."""
         import shutil
         try:
             free_bytes = shutil.disk_usage(scratch_dir).free
@@ -114,8 +114,8 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
     @staticmethod
     def _setup_scratch(scratch_dir: str, feedback) -> str:
         """
-        Erstellt scratch_dir und setzt alle relevanten Env-Vars.
-        Gibt den finalisierten Pfad zurück.
+        Creates scratch_dir and sets all relevant env vars.
+        Returns the finalised path.
         """
         import os
         os.makedirs(scratch_dir, exist_ok=True)
@@ -124,8 +124,8 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         os.environ['GDAL_TMPDIR']   = scratch_dir   # GDAL temp files
         os.environ['GRASS_TMPDIR']  = scratch_dir   # GRASS temp maps
         os.environ['TMPDIR']        = scratch_dir   # allgemeiner Unix-TMPDIR
-        os.environ['TEMP']          = scratch_dir   # Windows-Kompatibilität
-        os.environ['TMP']           = scratch_dir   # Windows-Kompatibilität
+        os.environ['TEMP']          = scratch_dir   # Windows compatibility
+        os.environ['TMP']           = scratch_dir   # Windows compatibility
 
         feedback.pushInfo(f"Scratch-Verzeichnis: {scratch_dir}")
         feedback.pushInfo(
@@ -135,7 +135,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
 
     @staticmethod
     def _scratch_path(scratch_dir: str, name: str) -> str:
-        """Erzeugt einen vollständigen Pfad in scratch_dir."""
+        """Builds a full path inside scratch_dir."""
         import os
         return os.path.join(scratch_dir, name)
 
@@ -154,7 +154,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         from qgis.PyQt.QtCore import QVariant
 
         # ----------------------------------------------------------------
-        # UMGEBUNG — GDAL-Parallelismus und Cache
+        # ENVIRONMENT - GDAL parallelism and cache
         # ----------------------------------------------------------------
         n_cpu = str(multiprocessing.cpu_count())
         os.environ['GDAL_NUM_THREADS'] = n_cpu
@@ -163,7 +163,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         feedback.pushInfo(f"CPUs: {n_cpu} | GDAL_CACHEMAX=4096 MB")
 
         # ----------------------------------------------------------------
-        # SCRATCH-VERZEICHNIS — TB5-SSD oder Fallback
+        # SCRATCH DIRECTORY - TB5 SSD or fallback
         # ----------------------------------------------------------------
         scratch_raw = (
             self.parameterAsFile(parameters, self.SCRATCH_DIR, context) or
@@ -182,8 +182,8 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
 
         # ----------------------------------------------------------------
         # STEP 1 — Hydrological Conditioning: SAGA NextGen Wang & Liu
-        # Output: expliziter Pfad auf Scratch (nicht TEMPORARY_OUTPUT),
-        # damit QGIS nicht das interne Temp-Verzeichnis nutzt.
+        # output: explicit path on scratch (not TEMPORARY_OUTPUT),
+        # so that QGIS does not use the internal temp directory.
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 1/8 — Filling sinks (SAGA NextGen Wang-Liu, min_slope=0.01)...")
         filled_tif = self._scratch_path(scratch_dir, 'filled_dem.tif')
@@ -192,14 +192,14 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
             'ELEV':     dem,
             'MINSLOPE': 0.01,
             'FILLED':   filled_tif,          # explizit auf TB5-SSD
-            'FDIR':     'TEMPORARY_OUTPUT',  # klein, kein explizites Routing nötig
+            'FDIR':     'TEMPORARY_OUTPUT',  # small, no explicit routing needed
             'WSHED':    'TEMPORARY_OUTPUT',
         }, context=context, feedback=feedback)['FILLED']
 
         feedback.pushInfo(f"  Filled DEM → {filled_tif}")
 
         # ----------------------------------------------------------------
-        # STEP 2 — Watershed-Delineation auf FILLED DEM
+        # STEP 2 - watershed delineation on the FILLED DEM
         # NEU S3.0-B: memory=16384 MB (war 4096)
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 2/8 — Delineating watersheds (GRASS r.watershed, 16 GB memory)...")
@@ -216,7 +216,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         feedback.pushInfo(f"  Basin raster → {basins_tif}")
 
         # ----------------------------------------------------------------
-        # STEP 3 — Vectorise basins + zonal stats auf RAW DEM
+        # STEP 3 - vectorise basins + zonal stats on the RAW DEM
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 3/8 — Vectorising basins and computing zonal statistics...")
         basins_poly = processing.run("gdal:polygonize", {
@@ -317,7 +317,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         }, context=context, feedback=feedback)['OUTPUT']
 
         # ----------------------------------------------------------------
-        # STEP 6 — Saddle-Kandidaten aus gemeinsamen Basin-Grenzen
+        # STEP 6 - saddle candidates from shared basin borders
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 6/8 — Extracting and densifying basin divides...")
         lines = processing.run("native:polygonstolines", {
@@ -352,39 +352,39 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         # ----------------------------------------------------------------
         # STEP 7 — u_basin / v_basin via VEKTORISIERTEN Raster-Lookup
         #
-        # NEU S3.0-C: Vollständig NumPy-vektorisiert statt Pure-Python-Loop.
+        # NEW S3.0-C: fully NumPy-vectorised instead of a pure-Python loop.
         #
         # Ablauf:
-        #   Phase A  Alle Vertex-Koordinaten aus verts_clean laden
-        #            → ein einziger Python-Loop (unvermeidbar für QGIS-Layer-Zugriff)
-        #            → Ausgabe: xs[], ys[], attrs_list[]
+        #   Phase A  load all vertex coordinates from verts_clean
+        #            -> a single Python loop (unavoidable for QGIS layer access)
+        #            -> output: xs[], ys[], attrs_list[]
         #
-        #   Phase B  Batch-Raster-Lookup über alle Vertices gleichzeitig
-        #            → rows[], cols[] via NumPy-Integer-Division
-        #            → u_vals = raster_array[rows, cols] (vektorisierter Zugriff)
+        #   Phase B  batch raster lookup over all vertices simultaneously
+        #            -> rows[], cols[] via NumPy integer division
+        #            -> u_vals = raster_array[rows, cols] (vectorised access)
         #
         #   Phase C  8-Nachbar-Lookup vektorisiert
-        #            Für jeden Offset (dr, dc):
-        #              nb_rows = rows + dr  (gültige Indizes)
+        #            for each offset (dr, dc):
+        #              nb_rows = rows + dr  (valid indices)
         #              nb_cols = cols + dc
         #              nb_vals = raster_array[nb_rows_clipped, nb_cols_clipped]
-        #            Ergebnis: v_vals[] = erster Nachbar ≠ u für jeden Vertex
+        #            result: v_vals[] = first neighbour != u for each vertex
         #
-        #   Phase D  Output-Features nur für paired Vertices erzeugen
-        #            (Anzahl << n_total, daher Python-Loop hier akzeptabel)
+        #   Phase D  produce output features only for paired vertices
+        #            (count << n_total, so a Python loop is acceptable here)
         #
-        # Laufzeit-Vergleich (geschätzt, 100 Mio. Vertices):
+        # runtime comparison (estimated, 100 million vertices):
         #   v2.1 Pure Python:    ~60–120 Minuten
         #   v3.0 NumPy-vektori:  ~2–5 Minuten
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 7/8 — u_basin/v_basin via vectorised NumPy raster lookup...")
 
-        # Basin-Raster in RAM laden (einmalig, wie in v2.1)
+        # load basin raster into RAM (once, as in v2.1)
         ds = gdal.Open(basins_tif if os.path.exists(basins_tif) else basins_raster)
         band = ds.GetRasterBand(1)
         gt = ds.GetGeoTransform()
         nodata = band.GetNoDataValue()
-        raster_array = band.ReadAsArray()  # int32, ~9.8 GB für Nationalrun
+        raster_array = band.ReadAsArray()  # int32, ~9.8 GB for the national run
         ds = None
 
         n_rows, n_cols = raster_array.shape
@@ -392,12 +392,12 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
             f"  Basin-Raster geladen: {n_rows}×{n_cols} = {n_rows*n_cols/1e6:.0f} Mio. Pixel"
         )
 
-        # --- Phase A: Alle Koordinaten laden ---
+        # --- Phase A: load all coordinates ---
         feedback.pushInfo(f"  Phase A: Koordinaten aus {verts_clean.featureCount():,} Vertices laden...")
         n_total = verts_clean.featureCount()
         xs   = np.empty(n_total, dtype=np.float64)
         ys   = np.empty(n_total, dtype=np.float64)
-        zs   = np.empty(n_total, dtype=np.float64)  # z_-Feld für saddle elevation
+        zs   = np.empty(n_total, dtype=np.float64)  # z_ field for saddle elevation
         attrs_list = []
 
         z_field_idx = verts_clean.fields().indexFromName('z_1')
@@ -423,7 +423,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
 
         feedback.pushInfo(f"  Phase A abgeschlossen: {n_total:,} Koordinaten")
 
-        # --- Phase B: Raster-Zeilen/Spalten für alle Vertices berechnen ---
+        # --- Phase B: compute raster rows/columns for all vertices ---
         feedback.pushInfo("  Phase B: Vektorisierter Raster-Index-Lookup...")
         rows = ((ys - gt[3]) / gt[5]).astype(np.int64)
         cols = ((xs - gt[0]) / gt[1]).astype(np.int64)
@@ -449,7 +449,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         # --- Phase C: 8-Nachbar-Lookup vektorisiert ---
         feedback.pushInfo("  Phase C: 8-Nachbar-Lookup (vektorisiert)...")
         NEIGHBOURS = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
-        v_vals   = np.full(n_total, -1, dtype=np.int32)   # -1 = kein Partner
+        v_vals   = np.full(n_total, -1, dtype=np.int32)   # -1 = no partner
         v_found  = np.zeros(n_total, dtype=bool)
 
         for dr, dc in NEIGHBOURS:
@@ -465,11 +465,11 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
 
             nb_vals = raster_array[nb_rows_c, nb_cols_c].astype(np.int32)
 
-            # Bedingungen für diesen Offset:
-            # 1. Vertex noch nicht gefunden (!v_found)
-            # 2. Zentrum gültig (u_valid)
+            # conditions for this offset:
+            # 1. vertex not yet found (!v_found)
+            # 2. centre valid (u_valid)
             # 3. Nachbar in Grenzen
-            # 4. Nachbar-Wert != Zentrum-Wert (echter Übergang)
+            # 4. neighbour value != centre value (real transition)
             # 5. Nachbar-Wert != nodata
             cond = (
                 ~v_found &
@@ -483,7 +483,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
             v_vals[cond]  = nb_vals[cond]
             v_found[cond] = True
 
-            # Abbruch wenn alle gefunden (spart die restlichen Offsets)
+            # break when all found (saves the remaining offsets)
             if np.all(v_found[u_valid]):
                 feedback.pushInfo(f"    Alle validen Vertices nach {NEIGHBOURS.index((dr,dc))+1} Offsets gefunden")
                 break
@@ -494,7 +494,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
             f"({100*n_paired/max(n_total,1):.1f}% auf Divides)"
         )
 
-        # --- Phase D: Output-Features erzeugen ---
+        # --- Phase D: produce output features ---
         feedback.pushInfo("  Phase D: Output-Features erstellen...")
 
         out_lyr_fields = verts_clean.fields()
@@ -513,11 +513,11 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
         mem_pr.addAttributes(out_lyr_fields.toList())
         mem_lyr.updateFields()
 
-        # Indizes der paired Vertices
+        # indices of the paired vertices
         paired_mask = (u_valid & v_found)
         paired_idxs = np.flatnonzero(paired_mask)
 
-        BATCH_SIZE = 100_000  # größere Batches als v2.1 (50k) → weniger addFeatures()-Calls
+        BATCH_SIZE = 100_000  # larger batches than v2.1 (50k) -> fewer addFeatures() calls
         batch = []
         from qgis.core import QgsMemoryProviderUtils
 
@@ -547,7 +547,7 @@ class ATSOTASeamlessHydrologyTB5(QgsProcessingAlgorithm):
 
         feedback.pushInfo(f"  Saddle-Features im Output: {saddles_final.featureCount():,}")
 
-        # Scratch-Größe nach Step 7 berichten
+        # report scratch size after Step 7
         try:
             import shutil
             used_gb = (

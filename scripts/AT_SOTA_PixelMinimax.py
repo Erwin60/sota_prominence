@@ -6,27 +6,27 @@
 #           target_pk: als Post-Processing via find_routing_targets.py
 #
 # ZIEL DIESER VERSION:
-#   Die Rechenlogik bleibt UNVERÄNDERT:
-#     - gleiches bilineares Resampling
-#     - gleiche 3x3-Maxima-Erkennung
-#     - gleiche absteigende Pixel-Reihenfolge
-#     - gleiche 8er-Nachbarschaft
-#     - gleiche Union-Find / NaN-Guard Keycol-Logik
-#     - gleiche Output-Felder
+#   The computation logic remains UNCHANGED:
+#     - same bilinear resampling
+#     - same 3x3 maxima detection
+#     - same descending pixel order
+#     - same 8-neighbourhood
+#     - same Union-Find / NaN-guard key-col logic
+#     - same output fields
 #
-#   Geändert wird NUR das Speicherlayout:
-#     - große Union-Find-Arrays liegen als np.memmap auf SSD
-#     - die absteigende Pixel-Reihenfolge wird als externer Merge-Sort erzeugt
-#     - Scratch-Verzeichnis über SOTA_TMPDIR / SOTA_PIXMEM_DIR steuerbar
+#   ONLY the memory layout is changed:
+#     - large Union-Find arrays are held as np.memmap on SSD
+#     - the descending pixel order is produced as an external merge sort
+#     - scratch directory configurable via SOTA_TMPDIR / SOTA_PIXMEM_DIR
 #
 # EMPFOHLENE ENV-VARS (vom Shell-Skript gesetzt):
 #   SOTA_TMPDIR       z.B. /Volumes/Daten/AT_SOTA_150m/tmp/qgis_tmp
 #   SOTA_PIXMEM_DIR   z.B. /Volumes/Daten/AT_SOTA_150m/tmp/pixelminimax_memmap
-#   SOTA_SORT_CHUNK   Anzahl Pixel pro Sortier-Chunk, Standard 20_000_000
+#   SOTA_SORT_CHUNK   number of pixels per sort chunk, default 20_000_000
 #
-# WICHTIG:
-#   Diese Version ändert NICHT die mathematische Methode. Sie reduziert nur
-#   die RAM-Spitze, indem große Datenstrukturen file-backed auf SSD liegen.
+# IMPORTANT:
+#   This version does NOT change the mathematical method. It only reduces
+#   the RAM peak by holding large data structures file-backed on SSD.
 
 from qgis.PyQt.QtCore import QVariant
 from qgis.core import (
@@ -200,8 +200,8 @@ class AT_SOTA_PixelMinimax(QgsProcessingAlgorithm):
 
             local_idx = (rel + start).astype(np.int64, copy=False)
             # Exakte Ordnung wie zuvor:
-            #   primär   Elevation absteigend
-            #   sekundär Pixelindex aufsteigend
+            #   primary    elevation descending
+            #   secondary  pixel index ascending
             order = np.lexsort((local_idx, -flat_dem[local_idx]))
             sorted_idx = local_idx[order]
 
@@ -227,8 +227,8 @@ class AT_SOTA_PixelMinimax(QgsProcessingAlgorithm):
             mm = np.memmap(run_path, dtype=np.int64, mode='r', shape=(run_len,))
             runs.append(mm)
             first_idx = int(mm[0])
-            # heapq = Min-Heap → negative Höhe für absteigende Reihenfolge.
-            # Bei gleicher Höhe entscheidet der Pixelindex aufsteigend.
+            # heapq = min-heap -> negative elevation for descending order.
+            # On equal elevation the ascending pixel index decides.
             heapq.heappush(heap, (-float(flat_dem[first_idx]), first_idx, run_id, 0))
 
         try:
@@ -280,15 +280,15 @@ class AT_SOTA_PixelMinimax(QgsProcessingAlgorithm):
 
         try:
             # ------------------------------------------------------------
-            # 1 — DEM auf Rechenauflösung resampling
-            #     WICHTIG: AT_10m_PADDED.tif ist im Produktionslauf bereits
-            #     ein 10-m-DEM. Dann ist ein erneutes gdal.Warp auf 10 m
-            #     redundant und kann wegen der Dateigröße unnötig ein sehr
-            #     großes temporäres TIFF erzeugen.
-            #     Die Rechenlogik bleibt unverändert: wenn die Auflösung des
-            #     Eingabe-DEM bereits exakt der Zielauflösung entspricht,
-            #     verwenden wir das DEM direkt. Nur wenn die Auflösung
-            #     abweicht, wird wie bisher bilinear resampelt.
+            # 1 - resample DEM to computation resolution
+            #     IMPORTANT: in the production run AT_10m_PADDED.tif is already
+            #     a 10 m DEM. Then a repeated gdal.Warp to 10 m is
+            #     redundant and, due to file size, can unnecessarily create a very
+            #     large temporary TIFF.
+            #     The computation logic stays unchanged: if the resolution of the
+            #     input DEM already matches the target resolution exactly,
+            #     we use the DEM directly. Only if the resolution
+            #     differs is it resampled bilinearly as before.
             # ------------------------------------------------------------
             src_ds = gdal.Open(dem_path)
             if src_ds is None:
@@ -318,7 +318,7 @@ class AT_SOTA_PixelMinimax(QgsProcessingAlgorithm):
                 dem_open_path = coarse_path
 
             # ------------------------------------------------------------
-            # 2 — DEM laden
+            # 2 - load DEM
             # ------------------------------------------------------------
             ds = gdal.Open(dem_open_path)
             if ds is None:
@@ -358,10 +358,10 @@ class AT_SOTA_PixelMinimax(QgsProcessingAlgorithm):
             flat_peak = peak_mask.ravel()
             peak_indices = np.flatnonzero(flat_peak).astype(np.int64, copy=False)
 
-            # Kein Copy: flat_dem/flat_valid/flat_peak bleiben Views.
+            # No copy: flat_dem/flat_valid/flat_peak remain views.
             del valid, peak_mask
 
-            # Exaktes regionales Minimum ohne große Vollkopie.
+            # Exact regional minimum without a large full copy.
             global_min = self._chunked_valid_min(flat_dem, flat_valid, chunk_size=10_000_000)
 
             # ------------------------------------------------------------
@@ -497,7 +497,7 @@ class AT_SOTA_PixelMinimax(QgsProcessingAlgorithm):
                     eb = float(comp_pk_elev[rb])
                     ib = int(comp_pk_idx[rb])
 
-                    # keycol VOR Union (identisch zur bisherigen Logik)
+                    # key col BEFORE union (identical to the previous logic)
                     if ia >= 0 and ib >= 0:
                         if ea > eb and math.isnan(float(key_col[ib])):
                             key_col[ib] = elev
@@ -536,7 +536,7 @@ class AT_SOTA_PixelMinimax(QgsProcessingAlgorithm):
                 f'memmap scratch={self._format_bytes(initial_memmap_bytes)}')
 
             # ------------------------------------------------------------
-            # 6 — Border-Polygon laden (mit CRS-Transformation)
+            # 6 - load border polygon (with CRS transformation)
             # ------------------------------------------------------------
             border_geom = None
             if border_path and os.path.exists(border_path):
@@ -559,7 +559,7 @@ class AT_SOTA_PixelMinimax(QgsProcessingAlgorithm):
                         f"({border_crs.authid()} → {dem_crs.authid()})")
 
             # ------------------------------------------------------------
-            # 7 — Output (Feldnamen kompatibel mit AT_SOTA_Refine1m)
+            # 7 - output (field names compatible with AT_SOTA_Refine1m)
             # ------------------------------------------------------------
             dem_crs = QgsCoordinateReferenceSystem()
             dem_crs.createFromWkt(crs_wkt)

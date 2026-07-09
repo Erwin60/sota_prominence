@@ -2,32 +2,32 @@
 # -*- coding: utf-8 -*-
 """
 find_routing_targets.py  —  v1.0
-Post-Processing: Routing-Zielpeak für jeden Gipfel in peaks_prom_raw.gpkg.
+Post-processing: routing target peak for each summit in peaks_prom_raw.gpkg.
 
-Der Routing-Zielpeak ist der nächsthöhere Gipfel den das Union-Find beim
-Key-Col-Merge als Ziel-Komponente hatte. Da target_pk_idx aus dem heißen
-UF-Loop zu teuer ist (+20 GB Memmap), wird er hier geometrisch rekonstruiert:
+The routing target peak is the next higher summit that the Union-Find had as
+the target component at the key-col merge. Since target_pk_idx from the hot
+UF loop is too expensive (+20 GB memmap), it is reconstructed geometrically here:
 
-Methode:
-  Für jeden Gipfel P mit Keycol K(P) bei (kx, ky):
-  - Gesucht: Gipfel Q mit zpk(Q) > zpk(P) und Q liegt "hinter" dem Keycol
-    (d.h. in Verlängerung P→K oder zumindest auf der dem K zugewandten Seite)
-  - Practical: Q = nächster Gipfel mit zpk > zpk(P) der dem Keycol am
-    nächsten liegt (Distanz Keycol→Q minimiert)
+Method:
+  For each summit P with key col K(P) at (kx, ky):
+  - Sought: summit Q with zpk(Q) > zpk(P) and Q lies "behind" the key col
+    (i.e. in the extension P->K or at least on the side facing K)
+  - Practical: Q = the nearest summit with zpk > zpk(P) that lies closest
+    to the key col (distance key col->Q minimised)
 
-Das Ergebnis ist eine Näherung. Der exakte Zielpeak wäre nur aus dem
-internen UF-State rekonstruierbar.
+The result is an approximation. The exact target peak would only be
+reconstructable from the internal UF state.
 
-Verwendung:
+Usage:
   python3 find_routing_targets.py \\
       --input  /Volumes/Daten/AT_SOTA_150m/intermediate_step2v28/peaks_prom_raw.gpkg \\
       --output /Volumes/Daten/AT_SOTA_150m/intermediate_step2v28/peaks_prom_raw_targets.gpkg
 
-Fügt drei neue Felder hinzu:
-  target_pk_x     FLOAT  X-Koordinate des Routing-Zielpeaks (EPSG:25833)
-  target_pk_y     FLOAT  Y-Koordinate
-  target_pk_elev  FLOAT  Höhe des Routing-Zielpeaks [m]
-  target_pk_dist  FLOAT  Distanz Keycol → Zielpeak [km]
+Adds three new fields:
+  target_pk_x     FLOAT  X coordinate of the routing target peak (EPSG:25833)
+  target_pk_y     FLOAT  Y coordinate
+  target_pk_elev  FLOAT  elevation of the routing target peak [m]
+  target_pk_dist  FLOAT  distance key col -> target peak [km]
 """
 
 import argparse
@@ -51,7 +51,7 @@ def wkb_xy(blob):
 
 
 def build_grid_index(peaks, cell_m=10_000):
-    """Spatial grid index: (cx,cy) → list of peak dicts."""
+    """Spatial grid index: (cx,cy) -> list of peak dicts."""
     idx = {}
     for p in peaks:
         if p['x'] is None: continue

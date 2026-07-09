@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
 # Filename: AT_SOTA_Refine1m.py
-# Version:  3.0  — Keycol 1m-Verfeinerung (Zonal-Min) hinzugefügt
+# Version:  3.0  - key-col 1m refinement (zonal min) added
 #
 # CHANGES vs. 2.1:
 # NEW  Keycol 1m-Verfeinerung
-#   Wenn keycol_x/keycol_y vorhanden (aus PixelMinimax): Zonal-Min(1m, 25m Radius)
-#   rund um den Sattel-Pixel. Formel: prom_ref = z1m_max(Gipfel) - z1m_min(Sattel)
-#   Falls keycol_x/y fehlen: Fallback auf altes Verhalten (keycol aus 10m).
+#   If keycol_x/keycol_y are present (from PixelMinimax): zonal min(1m, 25m radius)
+#   around the saddle pixel. Formula: prom_ref = z1m_max(summit) - z1m_min(saddle)
+#   If keycol_x/y are missing: fall back to the old behaviour (key col from 10m).
 #
 # CHANGES vs. 2.0:
 #
-# FIX-A  Feldname 'zpk_1' in der Formel abgesichert
-#   native:rastersampling mit COLUMN_PREFIX='zpk_' erzeugt 'zpk_1' (mit
-#   Bandnummer) oder 'zpk_' (ohne). Der Pre-Flight-Check ermittelt jetzt
-#   den tatsächlichen Feldnamen dynamisch und verwendet ihn in der Formel.
+# FIX-A  field name 'zpk_1' secured in the formula
+#   native:rastersampling with COLUMN_PREFIX='zpk_' produces 'zpk_1' (with
+#   band number) or 'zpk_' (without). The pre-flight check now determines
+#   the actual field name dynamically and uses it in the formula.
 #
-# FIX-B  Leerprüfung für ambiguous band
-#   Im Wien-Testgebiet (fast keine Berge) kann ambig_peaks leer sein.
-#   In diesem Fall werden die Buffer/Zonal/Join-Schritte übersprungen
-#   und nur safe_peaks wird als Ergebnis zurückgegeben.
+# FIX-B  empty check for the ambiguous band
+#   In the Vienna test area (almost no mountains) ambig_peaks can be empty.
+#   In that case the buffer/zonal/join steps are skipped
+#   and only safe_peaks is returned as the result.
 #
 # FIX-C  Zonal Statistics Feldname abgesichert
-#   native:zonalstatisticsfb mit COLUMN_PREFIX='z1m_' und STATISTICS=[6]
-#   erzeugt 'z1m_max' in QGIS 3.3x, aber ältere Versionen können
-#   'z1m_6' erzeugen. Der Join-Feldname wird dynamisch bestimmt.
+#   native:zonalstatisticsfb with COLUMN_PREFIX='z1m_' and STATISTICS=[6]
+#   produces 'z1m_max' in QGIS 3.3x, but older versions may
+#   produce 'z1m_6'. The join field name is determined dynamically.
 
 from qgis.PyQt.QtCore import QVariant
 from qgis.core import (
@@ -57,7 +57,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
     # ------------------------------------------------------------------
     @staticmethod
     def _field_by_prefix(layer, prefix):
-        """Gibt den ersten Feldnamen zurück, der mit 'prefix' beginnt."""
+        """Returns the first field name that begins with 'prefix'."""
         prefix_l = prefix.lower()
         for f in layer.fields():
             if f.name().lower().startswith(prefix_l):
@@ -88,7 +88,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
         dem1m = self.parameterAsRasterLayer(parameters, self.DEM_1M, context)
 
         # ----------------------------------------------------------------
-        # Pre-Flight: Pflichtfelder prüfen
+        # pre-flight: check required fields
         # ----------------------------------------------------------------
         field_names = [f.name() for f in peaks.fields()]
         for required in ('prom', 'keycol'):
@@ -98,7 +98,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
                     f"Vorhandene Felder: {field_names}. "
                     f"Layer muss von keycol_minimax v2.1 stammen.")
 
-        # FIX-A: tatsächlichen zpk_-Feldnamen ermitteln
+        # FIX-A: determine the actual zpk_ field name
         zpk_field = self._field_by_prefix(peaks, 'zpk_')
         if zpk_field is None:
             raise QgsProcessingException(
@@ -126,23 +126,23 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
         feedback.pushInfo(f"  Ambiguous Peaks (130–170 m): {ambig_peaks.featureCount()}")
 
         # ----------------------------------------------------------------
-        # FIX-B: Leerprüfung — ambiguous band kann in jedem Testgebiet leer sein
+        # FIX-B: empty check - the ambiguous band can be empty in any test area
         #
-        # Das ist kein Hinweis auf flaches Gelände, sondern einfach der
-        # normale Fall wenn kein Peak zufällig eine 10m-Prominenz zwischen
-        # 130 und 170 m hat. Beispiel Wien-Testgebiet: der Hermannskogel
-        # (449 m) hat eine Prominenz weit über 170 m und fällt direkt in
-        # safe_peaks — der ambiguous band ist leer, obwohl das Gebiet
+        # This is not an indication of flat terrain, but simply the
+        # normal case when no peak happens to have a 10m prominence between
+        # 130 and 170 m. Example Vienna test area: the Hermannskogel
+        # (449 m) has a prominence far above 170 m and falls directly into
+        # safe_peaks - the ambiguous band is empty, although the area
         # durchaus Topographie hat.
-        # Ohne diese Prüfung würden buffer/zonal/join auf einem leeren
-        # Layer laufen und QGIS würde mit einem Fehler abbrechen.
+        # Without this check, buffer/zonal/join would run on an empty
+        # layer and QGIS would abort with an error.
         # ----------------------------------------------------------------
         if ambig_peaks.featureCount() == 0:
             feedback.pushInfo(
                 "  Keine Peaks im ambiguous band (130–170 m) — "
                 "überspringe 1 m Refinement.")
 
-            # Schema der safe_peaks um prom_ref und z1m_max erweitern
+            # extend the safe_peaks schema by prom_ref and z1m_max
             safe_with_ref = processing.run("native:fieldcalculator", {
                 'INPUT':      safe_peaks,
                 'FIELD_NAME': 'prom_ref',
@@ -168,7 +168,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
             return {self.OUTPUT_SOTA: merged}
 
         # ----------------------------------------------------------------
-        # STEP 2 — Puffer um ambiguous Peaks (25 m Radius)
+        # STEP 2 - buffer around ambiguous peaks (25 m radius)
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 2/5 — Puffere ambiguous Peaks (25 m Radius)...")
         buffered = processing.run("native:buffer", {
@@ -179,7 +179,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
         }, context=context, feedback=feedback)['OUTPUT']
 
         # ----------------------------------------------------------------
-        # STEP 3 — Zonales Maximum im 1 m DEM
+        # STEP 3 - zonal maximum in the 1 m DEM
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 3/5 — Berechne 1 m Zonal-Maximum (25 m Radius)...")
         zonal_max = processing.run("native:zonalstatisticsfb", {
@@ -190,7 +190,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
             'OUTPUT':        'TEMPORARY_OUTPUT',
         }, context=context, feedback=feedback)['OUTPUT']
 
-        # FIX-C: tatsächlichen Feldnamen des Zonal-Max ermitteln
+        # FIX-C: determine the actual field name of the zonal max
         z1m_field = self._field_by_prefix(zonal_max, 'z1m_')
         if z1m_field is None:
             raise QgsProcessingException(
@@ -199,9 +199,9 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
         feedback.pushInfo(f"  Zonal-Max Feld: '{z1m_field}'")
 
         # ----------------------------------------------------------------
-        # STEP 3b — Zonal-Min für Sattel (keycol_x / keycol_y)
-        # Falls PixelMinimax die Sattel-Koordinaten mitgeliefert hat,
-        # verfeinern wir auch den Keycol auf 1m Präzision.
+        # STEP 3b - zonal min for saddle (keycol_x / keycol_y)
+        # If PixelMinimax has supplied the saddle coordinates,
+        # we also refine the key col to 1m precision.
         # ----------------------------------------------------------------
         has_keycol_coords = (
             'keycol_x' in [f.name() for f in ambig_peaks.fields()] and
@@ -209,12 +209,12 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
         )
 
         z1m_col_field = None
-        ambig_for_formula = ambig_peaks  # wird ggf. durch gejointen Layer ersetzt
+        ambig_for_formula = ambig_peaks  # replaced by the joined layer if applicable
 
         if has_keycol_coords:
             feedback.pushInfo("Step 3b/5 — Keycol 1m Zonal-Min (25 m Radius)...")
 
-            # Keycol-Punkte direkt aus keycol_x/keycol_y erstellen (kein Algorithmus nötig)
+            # create key-col points directly from keycol_x/keycol_y (no algorithm needed)
             from qgis.core import (QgsVectorLayer, QgsField, QgsFields,
                                    QgsFeature, QgsGeometry, QgsPointXY,
                                    QgsWkbTypes, QgsMemoryProviderUtils)
@@ -245,7 +245,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
             keycol_pts.updateExtents()
             feedback.pushInfo(f"  Keycol-Punkte erstellt: {keycol_pts.featureCount()}")
 
-            # 25m Puffer um Sattel-Punkte
+            # 25m buffer around saddle points
             kc_buf = processing.run("native:buffer", {
                 'INPUT':    keycol_pts,
                 'DISTANCE': 25,
@@ -253,7 +253,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
                 'OUTPUT':   'TEMPORARY_OUTPUT',
             }, context=context, feedback=feedback)['OUTPUT']
 
-            # Zonal-Min auf 1m DEM
+            # zonal min on 1m DEM
             kc_zonal = processing.run("native:zonalstatisticsfb", {
                 'INPUT':         kc_buf,
                 'INPUT_RASTER':  dem1m,
@@ -266,8 +266,8 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
             if z1m_col_field:
                 feedback.pushInfo(f"  Zonal-Min Sattel Feld: '{z1m_col_field}'")
 
-                # Join keycol-Min zurück auf ambig_peaks via Attribut-Join
-                # (keycol_pts erbt fid aus ambig_peaks → Join über fid)
+                # join key-col min back onto ambig_peaks via attribute join
+                # (keycol_pts inherits fid from ambig_peaks -> join via fid)
                 ambig_for_formula = processing.run("native:joinattributestable", {
                     'INPUT':        ambig_peaks,
                     'FIELD':        'fid',
@@ -286,8 +286,8 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
             feedback.pushInfo("Step 3b/5 — keycol_x/y nicht vorhanden → Keycol bleibt 10m")
 
         # ----------------------------------------------------------------
-        # STEP 4 — 1 m Höhe zurück auf Punkt-Layer joinen
-        # Spatial Join (Punkt liegt im eigenen Puffer → intersects OK)
+        # STEP 4 - join 1 m elevation back onto the point layer
+        # spatial join (point lies inside its own buffer -> intersects OK)
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 4/5 — Joine 1 m Elevation zurück auf Punkte...")
         processing.run("native:createspatialindex",
@@ -305,7 +305,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
             'OUTPUT':      'TEMPORARY_OUTPUT',
         }, context=context, feedback=feedback)['OUTPUT']
 
-        # Formel: Gipfel 1m (coalesce), Sattel 1m wenn vorhanden sonst 10m
+        # formula: summit 1m (coalesce), saddle 1m if present otherwise 10m
         if has_keycol_coords and z1m_col_field:
             formula = (
                 f'coalesce("{z1m_field}", "{zpk_field}") - '
@@ -325,7 +325,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
         }, context=context, feedback=feedback)['OUTPUT']
 
         # ----------------------------------------------------------------
-        # Filtere: nur Peaks mit prom_ref ≥ 150 m behalten
+        # filter: keep only peaks with prom_ref >= 150 m
         # ----------------------------------------------------------------
         valid_refined = processing.run("native:extractbyexpression", {
             'INPUT':      calc_prom,
@@ -338,7 +338,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
         # ----------------------------------------------------------------
         # STEP 5 — Schema angleichen + Merge
         #
-        # safe_peaks braucht prom_ref und z1m_max damit mergevectorlayers
+        # safe_peaks needs prom_ref and z1m_max so that mergevectorlayers
         # keine NULL-Spalten erzeugt.
         # ----------------------------------------------------------------
         feedback.pushInfo("Step 5/5 — Schema angleichen und mergen...")
@@ -359,7 +359,7 @@ class ATSOTARefine1m(QgsProcessingAlgorithm):
             'OUTPUT':     'TEMPORARY_OUTPUT',
         }, context=context, feedback=feedback)['OUTPUT']
 
-        # Falls keycol-Zonal-Min Feld vorhanden, auch in safe_peaks ergänzen
+        # if the keycol zonal-min field is present, add it to safe_peaks too
         if has_keycol_coords and z1m_col_field:
             safe_with_z1m = processing.run("native:fieldcalculator", {
                 'INPUT':      safe_with_z1m,

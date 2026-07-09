@@ -4,21 +4,21 @@
 #
 # CHANGES vs. 2.0:
 #
-# 1. Geonamen-Filter auf F_CODE 7302 und 7303 (laut BEV-Spezifikation):
-#    7302 = Berggipfel, 7303 = Hochpunkt
-#    (7301 entfernt — betrifft Bergkuppen/Hügel, nicht SOTA-relevante Gipfel)
+# 1. Geonamen filter on F_CODE 7302 and 7303 (per BEV specification):
+#    7302 = mountain summit, 7303 = high point
+#    (7301 removed - refers to hill tops/hills, not SOTA-relevant summits)
 #
-# 2. Geonamen-Layer: explizite Unterstützung für den Layer-Namen
+# 2. Geonamen layer: explicit support for the layer name
 #    "DLM_7000_Namen_20250325 — NAM_7300_GELAENDEFORM_P_20250325"
-#    Der Layer-Name wird als Default im Parameter vorbelegt.
+#    The layer name is pre-filled as the default in the parameter.
 #
-# 3. Neuer Parameter P_BL_PATH: Bundesländer-GeoPackage (BL_202504.gpkg).
-#    Spatial Join (point-in-polygon) übernimmt 'land_id' und 'land'.
-#    Ist optional — wird der Pfad weggelassen, bleiben die Felder NULL.
+# 3. New parameter P_BL_PATH: federal-state GeoPackage (BL_202504.gpkg).
+#    Spatial join (point-in-polygon) takes over 'land_id' and 'land'.
+#    Optional - if the path is omitted, the fields remain NULL.
 #
 # 4. Ausgabe-Felder:
 #    NAME, name_dist_m, name_match  (wie bisher)
-#    land_id, land                  (neu: aus Bundesländer-Layer)
+#    land_id, land                  (new: from federal-state layer)
 
 from qgis.PyQt.QtCore import QVariant
 from qgis.core import (
@@ -272,7 +272,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
                 f"Search radius {radius_m:.1f} m outside 20–100 m.")
 
         # ----------------------------------------------------------------
-        # 1 — Geonamen layer laden & reprojektion
+        # 1 - load Geonamen layer & reproject
         # ----------------------------------------------------------------
         feedback.pushInfo("Öffne Geonamen-Layer...")
         geonamen_src = self._open_geonamen(gpkg_path, layer_name, feedback)
@@ -293,7 +293,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
         name_field = 'NAME' if 'NAME' in fn else 'Name'
 
         # ----------------------------------------------------------------
-        # 2 — Filter: nur F_CODE 7302 (Berggipfel) und 7303 (Hochpunkt)
+        # 2 - filter: only F_CODE 7302 (mountain summit) and 7303 (high point)
         # ----------------------------------------------------------------
         feedback.pushInfo("Filtere Geonamen auf F_CODE IN (7302, 7303)...")
         geonamen_filt = processing.run("native:extractbyexpression", {
@@ -307,7 +307,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
         sindex_geo = QgsSpatialIndex(geonamen_filt.getFeatures())
 
         # ----------------------------------------------------------------
-        # 3 — Bundesländer laden (optional)
+        # 3 - load federal states (optional)
         # ----------------------------------------------------------------
         bl_lyr    = None
         sindex_bl = None
@@ -315,7 +315,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
             feedback.pushInfo("Öffne Bundesländer-Layer...")
             bl_src = self._open_layer(bl_path, '', 'bundeslaender', feedback)
 
-            # Validierung der Pflichtfelder
+            # validation of the required fields
             bl_fn = [f.name() for f in bl_src.fields()]
             feedback.pushInfo(f"  BL-Felder: {bl_fn}")
             for req in ('land_id', 'land'):
@@ -386,7 +386,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
             raise QgsProcessingException("Could not create output sink.")
 
         # ----------------------------------------------------------------
-        # 4b — Staatsgrenze für border_dist_m laden
+        # 4b - load national border for border_dist_m
         # ----------------------------------------------------------------
         self._border_idx = None
         border_lyr = None
@@ -398,7 +398,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
                     'INPUT': b_src, 'TARGET_CRS': peaks.crs().authid(),
                     'OPERATION': '', 'OUTPUT': 'memory:border_reproj',
                 }, context=context, feedback=feedback)['OUTPUT']
-            # Polygon → Linien für Abstandsberechnung zur Grenzlinie
+            # polygon -> lines for distance computation to the border line
             border_lyr = processing.run("native:polygonstolines", {
                 'INPUT': b_src, 'OUTPUT': 'memory:border_lines',
             }, context=context, feedback=feedback)['OUTPUT']
@@ -423,7 +423,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
             attrs = list(pf.attributes()) + [None] * (out_fields.count() - len(pf.attributes()))
             pt = pf.geometry().asPoint()
 
-            # --- Geonamen: nächster Nachbar im Suchradius ---
+            # --- Geonamen: nearest neighbour within search radius ---
             chosen_name = None
             chosen_dist = None
             chosen_fcode = None
@@ -443,7 +443,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
                     chosen_dist = float(d)
                     chosen_fcode = int(cf['F_CODE']) if cf.fieldNameIndex('F_CODE') >= 0 and cf['F_CODE'] is not None else None
                     name_flag   = 1
-                    # BEV-Höhe aus HOEHE_BODEN
+                    # BEV elevation from HOEHE_BODEN
                     hb_idx = cf.fieldNameIndex('HOEHE_BODEN')
                     if hb_idx >= 0:
                         hb = cf['HOEHE_BODEN']
@@ -473,7 +473,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
             if name_flag:
                 matched_name += 1
 
-            # --- Bundesland: Punkt-in-Polygon (amtliche Polygone) ---
+            # --- federal state: point-in-polygon (official polygons) ---
             land_id_val = None
             land_val    = None
             bl_quelle   = None
@@ -486,7 +486,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
             attrs[out_fields.indexFromName('land')]      = land_val
             attrs[out_fields.indexFromName('BL_quelle')] = bl_quelle
 
-            # --- Staatsgrenze: Abstand zur Grenzlinie ---
+            # --- national border: distance to the border line ---
             border_dist = None
             border_zone = None
             if border_lyr is not None and self._border_idx is not None:
@@ -500,8 +500,8 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
                     if d < min_d:
                         min_d = d
                 if min_d < float('inf'):
-                    # Alle berechneten Peaks liegen innerhalb des AT-Borders
-                    # (geclippt in SeamlessHydrology Step 8) → Abstand ist positiv
+                    # all computed peaks lie inside the AT border
+                    # (clipped in SeamlessHydrology Step 8) -> distance is positive
                     border_dist = round(min_d, 1)
                     if border_dist > 50:
                         border_zone = 'INNER'
@@ -513,7 +513,7 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
             attrs[out_fields.indexFromName('border_dist_m')] = border_dist
             attrs[out_fields.indexFromName('border_zone')]   = border_zone
 
-            # --- Bundesländer-Grenzkontext ---
+            # --- federal-state border context ---
             bl_border_dist = None
             bl_border_zone = None
             neighbor_land_id = None
@@ -531,11 +531,11 @@ class AT_SOTA_Join_Geonamen(QgsProcessingAlgorithm):
             attrs[out_fields.indexFromName('admin_context')]    = admin_context
             attrs[out_fields.indexFromName('admin_review')]     = admin_review
 
-            # --- BEV-Referenzhöhe und Differenz zur ALS-Höhe ---
+            # --- BEV reference elevation and difference to ALS elevation ---
             z_bev_val  = round(chosen_hoehe, 1) if chosen_hoehe is not None else None
             z_bev_diff = None
             if z_bev_val is not None:
-                # Verfeinerte ALS-Höhe bevorzugen, sonst 10m-Raster
+                # prefer refined ALS elevation, otherwise 10m raster
                 z_als = None
                 z1m_idx = pf.fieldNameIndex('z1m_max')
                 zpk_idx = pf.fieldNameIndex('zpk_1')

@@ -466,7 +466,7 @@ class AT_SOTA_Match_DB(QgsProcessingAlgorithm):
         if not csv_path or not os.path.exists(csv_path):
             raise QgsProcessingException(f'CSV nicht gefunden: {csv_path}')
 
-        # Optional Bundesländer-Layer for authoritative land_id/land.
+        # Optional federal-state layer for authoritative land_id/land.
         bl_layer = None
         bl_idx = None
         if bl_gpkg_path:
@@ -514,7 +514,7 @@ class AT_SOTA_Match_DB(QgsProcessingAlgorithm):
             f'Kandidaten {near_calc_candidates}.')
 
         # ----------------------------------------------------------------
-        # 1 — SOTA-CSV laden und filtern
+        # 1 - load and filter SOTA CSV
         # ----------------------------------------------------------------
         feedback.pushInfo(f'Lade SOTA-CSV: {os.path.basename(csv_path)}')
         sota_list = []
@@ -678,7 +678,7 @@ class AT_SOTA_Match_DB(QgsProcessingAlgorithm):
             peak_index.addFeature(qf)
 
         # ----------------------------------------------------------------
-        # 4 — Berechnete Peaks matchen
+        # 4 - match computed peaks
         # ----------------------------------------------------------------
         n_ok = n_elev = n_new = 0
         zpk_field = 'zpk_1' if peaks.fields().indexFromName('zpk_1') >= 0 else None
@@ -856,7 +856,7 @@ class AT_SOTA_Match_DB(QgsProcessingAlgorithm):
             }
 
         # ----------------------------------------------------------------
-        # 5 — Filtergeometrie für DB_NO_PEAK / FOREIGN_PEAK
+        # 5 - filter geometry for DB_NO_PEAK / FOREIGN_PEAK
         # ----------------------------------------------------------------
         _filter_geom = None
         if border_gpkg_path:
@@ -895,7 +895,7 @@ class AT_SOTA_Match_DB(QgsProcessingAlgorithm):
             feedback.pushInfo(f'  Raumfilter: Bounding-Box-Fallback ({buf:.0f} m)')
 
         # ----------------------------------------------------------------
-        # 6 — Austrian DB entries without computed peak → DB_NO_PEAK
+        # 6 - Austrian DB entries without computed peak -> DB_NO_PEAK
         # ----------------------------------------------------------------
         n_db_no_peak = 0
         n_db_with_raw = 0
@@ -1028,7 +1028,7 @@ class AT_SOTA_Match_DB(QgsProcessingAlgorithm):
             }
 
         # ----------------------------------------------------------------
-        # 7 — Foreign peaks in border buffer → FOREIGN_PEAK
+        # 7 - Foreign peaks in border buffer -> FOREIGN_PEAK
         # ----------------------------------------------------------------
         if neighbor_radius > 0 and _filter_geom and not _filter_geom.isNull():
             for i, rec in enumerate(sota_list):

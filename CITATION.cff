@@ -13,8 +13,7 @@ authors:
     family-names: Grabler
     email: erwin.grabler@artcom.cc
     affiliation: "Independent researcher, Vienna, Austria"
-    # If you have an ORCID, uncomment and fill it in — Zenodo will use it:
-    # orcid: "https://orcid.org/0000-0000-0000-0000"
+    orcid: "https://orcid.org/0009-0002-5398-6646"
 version: "5.2"
 date-released: "2026-07-06"
 license: MIT
@@ -40,6 +39,7 @@ preferred-citation:
       family-names: Grabler
       email: erwin.grabler@artcom.cc
       affiliation: "Independent researcher, Vienna, Austria"
+      orcid: "https://orcid.org/0009-0002-5398-6646"
   year: 2026
   # Fill these in once the paper is published:
   # journal: ""

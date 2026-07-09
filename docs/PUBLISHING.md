@@ -80,9 +80,14 @@ git push -u origin main
 
 ## Note on the paper and presentation
 
-* The **presentation** files are intentionally **not** part of this repository.
-* The **paper** (`Prominence_v5_2.tex/.pdf`) is not required to live in the
-  repository. Including a preprint PDF is optional and common, but check the
-  target journal's policy on posting the accepted manuscript. The paper's
-  *Code Availability* section already points here
-  (`https://github.com/Erwin60/sota_prominence`).
+* The **paper PDF** *is* included, under [`paper/`](../paper/). This work is
+  self-published as a community contribution (not submitted to a commercial
+  journal), so there is no publisher embargo — keeping paper and code together
+  in one citable repository is the intended setup.
+* The **short presentation** is intentionally **not** included. Talks evolve
+  with speaking experience and audience, so a frozen copy here would go stale.
+  If a fixed version is ever wanted, add it later as a separate dated PDF, not a
+  working file.
+* The paper's *Code / Data Availability* section points to this repository and,
+  once minted, to the Zenodo archival DOI (see
+  [`ZENODO_DOI.md`](ZENODO_DOI.md)).
