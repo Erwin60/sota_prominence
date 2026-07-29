@@ -191,7 +191,7 @@ this repository" button from it).
 
 **Software** — concept DOI, always resolves to the latest archived release:
 
-> E. Grabler, *AT-SOTA Prominence Pipeline*, version 5.2.1, 2026. Zenodo.
+> E. Grabler, *AT-SOTA Prominence Pipeline*, version 5.2.2, 2026. Zenodo.
 > doi:10.5281/zenodo.21216462
 
 **Paper:**

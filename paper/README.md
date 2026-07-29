@@ -4,7 +4,7 @@ This folder contains the paper that documents the AT-SOTA prominence workflow.
 
 | File | Description |
 |------|-------------|
-| `Prominence_v5_2.pdf` | Full paper (16 pages), the reference description of the method, data, and validation. |
+| `Prominence_v5_2_1.pdf` | Full paper (16 pages), the reference description of the method, data, and validation. |
 
 ## Publication status
 

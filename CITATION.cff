@@ -14,7 +14,7 @@ authors:
     email: erwin.grabler@artcom.cc
     affiliation: "Independent researcher, Vienna, Austria"
     orcid: "https://orcid.org/0009-0002-5398-6646"
-version: "v5.2.1"
+version: "v5.2.2"
 date-released: "2026-07-29"
 license: MIT
 repository-code: "https://github.com/Erwin60/sota_prominence"
