@@ -20,7 +20,7 @@ so that the method and the code live in one place and can be cited together.
 Because no journal publisher is involved, there is no embargo or
 manuscript-policy restriction on including the PDF in this repository.
 
-Archival record: doi:10.5281/zenodo.PAPER
+Archival record: doi:10.5281/zenodo.21279806
 
 ## How to cite
 
@@ -32,8 +32,8 @@ Both records are archived on Zenodo and cross-linked through their
 related-identifier metadata, so paper, code, and archive all point to each
 other:
 
-- **Software** (concept DOI, latest release): doi:10.5281/zenodo.SOFTWARE
-- **Paper**: doi:10.5281/zenodo.PAPER
+- **Software** (concept DOI, latest release): doi:10.5281/zenodo.21216462
+- **Paper**: doi:10.5281/zenodo.21279806
 
 ## Note on the presentation
 
