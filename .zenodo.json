@@ -1,0 +1,46 @@
+{
+  "upload_type": "software",
+  "title": "AT-SOTA Prominence Pipeline: a divide-consistent QGIS workflow for topographic prominence (PixelMinimax)",
+  "version": "v5.2.1",
+  "language": "eng",
+  "license": "mit",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Grabler, Erwin",
+      "orcid": "0009-0002-5398-6646",
+      "affiliation": "Independent researcher, Vienna, Austria"
+    }
+  ],
+  "description": "<p>A divide-consistent, seamless QGIS/GRASS/SAGA workflow that computes national topographic prominence directly on a raster digital terrain model and certifies <strong>Summits on the Air (SOTA)</strong> candidates for Austria at the 150&nbsp;m prominence threshold.</p><p>The core contribution is <strong>PixelMinimax</strong>, a pixel-level descending Union-Find algorithm. DEM pixels are processed from highest to lowest elevation, and the key col of each summit is assigned at the moment its connected component first merges with a higher-elevation component. This first merge occurs exactly at the key-col elevation, so the method needs neither an intermediate basin&ndash;saddle graph nor parameter tuning, and it correctly handles mountain-to-plain transition zones. The computation is O(n&nbsp;log&nbsp;n) and runs at 10&nbsp;m resolution, followed by a dual 1&nbsp;m refinement of summit and key-col elevations for candidates inside a conservative &plusmn;20&nbsp;m band around the threshold.</p><h3>Repository contents</h3><ul><li><code>run_sota_pipeline.sh</code> &mdash; orchestrator running Step&nbsp;0 through Step&nbsp;5d (plus Step&nbsp;4b) with skip/force logic</li><li><code>scripts/</code> &mdash; QGIS Processing scripts: PixelMinimax, seamless hydrology, dual 1&nbsp;m refinement, Geonamen join, SOTA database match, ambiguity diagnosis, coordinate validation, final assignment, key-col export, and the standalone routing-target post-processor</li><li><code>docs/PARAMETERS.md</code> &mdash; full reference of every command-line and per-step parameter, with examples</li><li><code>docs/SETUP.md</code> &mdash; environment setup and a worked first run</li><li><code>paper/</code> &mdash; the paper documenting the method, data, and validation</li></ul><h3>National run</h3><p>Applied to the Austrian ALS-derived DEM (approximately 2.45 billion pixels at 10&nbsp;m), the workflow identifies 2433 qualifying summits with prominence &ge;&nbsp;150&nbsp;m and agrees with 95.4&nbsp;% of the official SOTA Austria database in cross-comparison.</p><h3>Requirements</h3><p>QGIS 3.34+, GRASS GIS 8.x, GDAL 3.8+, SAGA GIS 9.x. The national run requires a 64&nbsp;GB workstation with fast NVMe scratch storage (95.8&nbsp;GB scratch footprint, 10&nbsp;h 29&nbsp;m Step&nbsp;2 runtime).</p><h3>Input data</h3><p>The BEV base datasets (ALS-DGM 1&nbsp;m, Verwaltungsgrenzen VGD, DLM Geonamen) are freely available from the Austrian Federal Office of Metrology and Surveying and are not redistributed here. The SOTA Austria database remains subject to its provider's terms.</p>",
+  "keywords": [
+    "topographic prominence",
+    "Summits on the Air",
+    "SOTA",
+    "QGIS",
+    "GRASS GIS",
+    "SAGA GIS",
+    "GDAL",
+    "Union-Find",
+    "PixelMinimax",
+    "digital elevation model",
+    "airborne laser scanning",
+    "ALS DEM",
+    "key col",
+    "geomorphometry",
+    "peak detection",
+    "Austria",
+    "reproducible workflow",
+    "open-source GIS",
+    "out-of-core computation"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.PAPER",
+      "relation": "isSupplementTo",
+      "resource_type": "publication-preprint",
+      "scheme": "doi"
+    }
+  ],
+  "notes": "Accompanies the preprint 'A Divide-Consistent, Seamless QGIS Workflow for SOTA Prominence (150 m) in Austria with Post-Computation Review Layers'. Reported results correspond to the v5.1 national data freeze."
+}

@@ -14,11 +14,12 @@ authors:
     email: erwin.grabler@artcom.cc
     affiliation: "Independent researcher, Vienna, Austria"
     orcid: "https://orcid.org/0009-0002-5398-6646"
-version: "5.2"
-date-released: "2026-07-06"
+version: "v5.2.1"
+date-released: "2026-07-29"
 license: MIT
 repository-code: "https://github.com/Erwin60/sota_prominence"
 url: "https://github.com/Erwin60/sota_prominence"
+doi: 10.5281/zenodo.SOFTWARE_CONCEPT
 keywords:
   - topographic prominence
   - SOTA
@@ -31,9 +32,15 @@ keywords:
   - SAGA GIS
   - ALS DEM
   - divide-consistent
+  - digital elevation model
+  - key col
+  - geomorphometry
+  - reproducible workflow
 preferred-citation:
   type: article
-  title: "A Divide-Consistent, Seamless QGIS Workflow for SOTA Prominence (150 m) in Austria"
+  title: >-
+    A Divide-Consistent, Seamless QGIS Workflow for SOTA Prominence (150 m)
+    in Austria with Post-Computation Review Layers
   authors:
     - given-names: Erwin
       family-names: Grabler
@@ -41,10 +48,34 @@ preferred-citation:
       affiliation: "Independent researcher, Vienna, Austria"
       orcid: "https://orcid.org/0009-0002-5398-6646"
   year: 2026
-  # Fill these in once the paper is published:
-  # journal: ""
-  # volume: ""
-  # issue: ""
-  # start: ""   # first page
-  # end: ""      # last page
-  # doi: ""
+  doi: 10.5281/zenodo.PAPER
+  url: "https://doi.org/10.5281/zenodo.PAPER"
+  publisher:
+    name: Zenodo
+  notes: "Self-published preprint, typeset in the IEEE journal template (IEEEtran); not submitted to or peer-reviewed by IEEE."
+references:
+  - type: report
+    title: "Digitales Geländehöhenmodell (ALS-DGM) – Höhenraster"
+    authors:
+      - name: "Bundesamt für Eich- und Vermessungswesen (BEV)"
+    year: 2025
+    url: "https://www.bev.gv.at/Services/Produkte/Digitales-Gelaendehoehenmodell/ALS-Hoehenraster.html"
+    notes: "1 m raster derived from Airborne Laser Scanning; freely available (unentgeltlich)."
+  - type: report
+    title: "Verwaltungsgrenzen (VGD)"
+    authors:
+      - name: "Bundesamt für Eich- und Vermessungswesen (BEV)"
+    year: 2025
+    url: "https://www.bev.gv.at/Services/Produkte/Kataster-und-Verzeichnisse/Verwaltungsgrenzen.html"
+  - type: report
+    title: "Digitales Landschaftsmodell (DLM) – Namen"
+    authors:
+      - name: "Bundesamt für Eich- und Vermessungswesen (BEV)"
+    year: 2025
+    url: "https://www.bev.gv.at/Services/Produkte/Digitales-Landschaftsmodell/Namen.html"
+  - type: software
+    title: "QGIS Geographic Information System"
+    authors:
+      - name: "QGIS Development Team"
+    year: 2025
+    url: "https://qgis.org"

@@ -1,5 +1,8 @@
 # AT-SOTA Prominence Pipeline
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.SOFTWARE.svg)](https://doi.org/10.5281/zenodo.SOFTWARE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A divide-consistent, seamless QGIS/GRASS/SAGA workflow that computes national
 topographic **prominence** directly on a raster digital terrain model (DTM) and
 certifies **Summits on the Air (SOTA)** candidates for Austria at the
@@ -22,7 +25,12 @@ the official SOTA Austria database in cross-comparison.
 This repository accompanies the paper:
 
 > E. Grabler, *A Divide-Consistent, Seamless QGIS Workflow for SOTA Prominence
-> (150 m) in Austria.*
+> (150 m) in Austria with Post-Computation Review Layers*, version 5.2.1, 2026.
+> Self-archived preprint, Zenodo. doi:10.5281/zenodo.PAPER
+
+The paper is a **self-archived, author-produced preprint**. It has **not been
+peer-reviewed** by a journal, and it has **not** been submitted to or published
+by the IEEE — the IEEE template is used for formatting consistency only.
 
 ---
 
@@ -179,8 +187,18 @@ covered by this license and remain subject to their respective providers' terms.
 If you use this workflow, please cite both the software and the accompanying
 paper. The paper PDF is included in [`paper/`](paper/), and machine-readable
 citation metadata is in [`CITATION.cff`](CITATION.cff) (GitHub shows a "Cite
-this repository" button from it). An archival DOI is minted on Zenodo when a
-release is published; the resulting archival DOI is then recorded here and in the paper.
+this repository" button from it).
+
+**Software** — concept DOI, always resolves to the latest archived release:
+
+> E. Grabler, *AT-SOTA Prominence Pipeline*, version 5.2.1, 2026. Zenodo.
+> doi:10.5281/zenodo.SOFTWARE
+
+**Paper:**
+
+> E. Grabler, *A Divide-Consistent, Seamless QGIS Workflow for SOTA Prominence
+> (150 m) in Austria with Post-Computation Review Layers*, version 5.2.1, 2026.
+> Self-archived preprint, Zenodo. doi:10.5281/zenodo.PAPER
 
 ## Author
 

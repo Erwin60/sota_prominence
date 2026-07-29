@@ -8,13 +8,19 @@ This folder contains the paper that documents the AT-SOTA prominence workflow.
 
 ## Publication status
 
-This paper is **self-published as a community contribution** and is **not**
-submitted to a commercial journal. It is distributed here under the same open
-terms as the rest of the repository so that the method and the code live in one
-place and can be cited together.
+This is a **self-archived, author-produced preprint**, version 5.2.1. It has
+**not been peer-reviewed** by a journal.
 
-Because there is no journal publisher involved, there is no embargo or
+The document is typeset in the IEEE journal template (IEEEtran) for formatting
+consistency only. It has **not** been submitted to, reviewed by, or published
+by the IEEE, and no IEEE endorsement is implied.
+
+It is distributed here under the same open terms as the rest of the repository
+so that the method and the code live in one place and can be cited together.
+Because no journal publisher is involved, there is no embargo or
 manuscript-policy restriction on including the PDF in this repository.
+
+Archival record: doi:10.5281/zenodo.PAPER
 
 ## How to cite
 
@@ -22,10 +28,12 @@ Please cite both the software and the paper. Machine-readable citation metadata
 is in [`../CITATION.cff`](../CITATION.cff); GitHub renders a "Cite this
 repository" button from it.
 
-An archival snapshot of the code (and therefore a citable DOI) is created on
-Zenodo when a release is published. Once that DOI exists it is
-recorded in `CITATION.cff` and in the paper's *Code / Data Availability*
-section, so paper, code, and archive all point to each other.
+Both records are archived on Zenodo and cross-linked through their
+related-identifier metadata, so paper, code, and archive all point to each
+other:
+
+- **Software** (concept DOI, latest release): doi:10.5281/zenodo.SOFTWARE
+- **Paper**: doi:10.5281/zenodo.PAPER
 
 ## Note on the presentation
 
