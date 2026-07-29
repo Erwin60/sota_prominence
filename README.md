@@ -1,6 +1,6 @@
 # AT-SOTA Prominence Pipeline
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21216462.svg)](https://doi.org/10.5281/zenodo.21216462)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21691177.svg)](https://doi.org/10.5281/zenodo.21691177)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A divide-consistent, seamless QGIS/GRASS/SAGA workflow that computes national
@@ -25,8 +25,8 @@ the official SOTA Austria database in cross-comparison.
 This repository accompanies the paper:
 
 > E. Grabler, *A Divide-Consistent, Seamless QGIS Workflow for SOTA Prominence
-> (150 m) in Austria with Post-Computation Review Layers*, version 5.2.1, 2026.
-> Self-archived preprint, Zenodo. doi:10.5281/zenodo.21279806
+> (150 m) in Austria with Post-Computation Review Layers*, version 5.2.2, 2026.
+> Self-archived preprint, Zenodo. doi:10.5281/zenodo.21279805
 
 The paper is a **self-archived, author-produced preprint**. It has **not been
 peer-reviewed** by a journal, and it has **not** been submitted to or published
@@ -191,14 +191,14 @@ this repository" button from it).
 
 **Software** — concept DOI, always resolves to the latest archived release:
 
-> E. Grabler, *AT-SOTA Prominence Pipeline*, version 5.2.2, 2026. Zenodo.
-> doi:10.5281/zenodo.21216462
+> E. Grabler, *AT-SOTA Prominence Pipeline*, version 5.2.3, 2026. Zenodo.
+> doi:10.5281/zenodo.21691177
 
 **Paper:**
 
 > E. Grabler, *A Divide-Consistent, Seamless QGIS Workflow for SOTA Prominence
-> (150 m) in Austria with Post-Computation Review Layers*, version 5.2.1, 2026.
-> Self-archived preprint, Zenodo. doi:10.5281/zenodo.21279806
+> (150 m) in Austria with Post-Computation Review Layers*, version 5.2.2, 2026.
+> Self-archived preprint, Zenodo. doi:10.5281/zenodo.21279805
 
 ## Author
 

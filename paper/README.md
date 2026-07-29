@@ -4,11 +4,11 @@ This folder contains the paper that documents the AT-SOTA prominence workflow.
 
 | File | Description |
 |------|-------------|
-| `Prominence_v5_2_1.pdf` | Full paper (16 pages), the reference description of the method, data, and validation. |
+| `Prominence_v5_2_2.pdf` | Full paper (16 pages), the reference description of the method, data, and validation. |
 
 ## Publication status
 
-This is a **self-archived, author-produced preprint**, version 5.2.1. It has
+This is a **self-archived, author-produced preprint**, version 5.2.2. It has
 **not been peer-reviewed** by a journal.
 
 The document is typeset in the IEEE journal template (IEEEtran) for formatting
@@ -20,7 +20,7 @@ so that the method and the code live in one place and can be cited together.
 Because no journal publisher is involved, there is no embargo or
 manuscript-policy restriction on including the PDF in this repository.
 
-Archival record: doi:10.5281/zenodo.21279806
+Archival record: doi:10.5281/zenodo.21279805
 
 ## How to cite
 
@@ -32,8 +32,8 @@ Both records are archived on Zenodo and cross-linked through their
 related-identifier metadata, so paper, code, and archive all point to each
 other:
 
-- **Software** (concept DOI, latest release): doi:10.5281/zenodo.21216462
-- **Paper**: doi:10.5281/zenodo.21279806
+- **Software** (concept DOI, latest release): doi:10.5281/zenodo.21691177
+- **Paper**: doi:10.5281/zenodo.21279805
 
 ## Note on the presentation
 

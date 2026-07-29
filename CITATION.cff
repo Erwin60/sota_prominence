@@ -14,12 +14,12 @@ authors:
     email: erwin.grabler@artcom.cc
     affiliation: "Independent researcher, Vienna, Austria"
     orcid: "https://orcid.org/0009-0002-5398-6646"
-version: "v5.2.2"
+version: "v5.2.3"
 date-released: "2026-07-29"
 license: MIT
 repository-code: "https://github.com/Erwin60/sota_prominence"
 url: "https://github.com/Erwin60/sota_prominence"
-doi: 10.5281/zenodo.21216462
+doi: 10.5281/zenodo.21691177
 keywords:
   - topographic prominence
   - SOTA
@@ -48,8 +48,8 @@ preferred-citation:
       affiliation: "Independent researcher, Vienna, Austria"
       orcid: "https://orcid.org/0009-0002-5398-6646"
   year: 2026
-  doi: 10.5281/zenodo.21279806
-  url: "https://doi.org/10.5281/zenodo.21279806"
+  doi: 10.5281/zenodo.21279805
+  url: "https://doi.org/10.5281/zenodo.21279805"
   publisher:
     name: Zenodo
   notes: "Self-published preprint, typeset in the IEEE journal template (IEEEtran); not submitted to or peer-reviewed by IEEE."
